@@ -1,5 +1,9 @@
 # CDS 301 Final Project - Visualizing Historical Sea Ice and Climate Trends in the Southern Ocean
 
+## Insights extracted from the data and articles
+From the articles and datasets, key insights include:
+
+1. **Temporal coverage**: Data spans from 1929-1963
 
 Reference
 
