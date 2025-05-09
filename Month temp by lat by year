@@ -1,3 +1,9 @@
+df = pd.read_excel('Bjorge_et_al_catchlogbook_whaling_weather_data_1932-63_data_publication (1).csv')
+
+new_data = 'Divine_et_al_data_publication_Antarctic_logbooks_v2_Nov2023_final (1).xlsx'
+new_data_df = pd.read_excel(new_data)
+
+
 lat_bins = [-70, -60, -50, -40]
 lat_labels = ['60-70°S', '50-60°S', '40-50°S']
 
