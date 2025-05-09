@@ -1,0 +1,73 @@
+lat_bins = [-70, -60, -50, -40]
+lat_labels = ['60-70°S', '50-60°S', '40-50°S']
+
+# Add latitude zone to both datasets
+temp_df['lat_zone'] = pd.cut(temp_df['Latitude'], bins=lat_bins, labels=lat_labels)
+new_data_df_filtered['lat_zone'] = 'Antarctic'  # Label for Antarctic dataset
+
+
+# For the Whaling Expedition data
+temp_df['month'] = temp_df['date'].dt.month
+temp_df['season_year'] = temp_df['year'].where(temp_df['month'] < 11, temp_df['year'] + 1)
+temp_df_filtered = temp_df[temp_df['month'].isin([11,12,1,2,3])].copy()
+
+
+new_data_df_filtered['month'] = new_data_df_filtered['date'].dt.month
+new_data_df_filtered['season_year'] = new_data_df_filtered['year'].where(new_data_df_filtered['month'] < 11, new_data_df_filtered['year'] + 1)
+new_data_df_filtered = new_data_df_filtered[new_data_df_filtered['month'].isin([11,12,1,2,3])].copy()
+
+#Create year groups, grouped by 2-year intervals
+temp_df_filtered.loc[:, 'year_group'] = (temp_df_filtered['season_year'] // 2 * 2).astype(str) + '-' + ((temp_df_filtered['season_year'] // 2 * 2) + 1).astype(str)
+new_data_df_filtered.loc[:, 'year_group'] = (new_data_df_filtered['season_year'] // 2 * 2).astype(str) + '-' + ((new_data_df_filtered['season_year'] // 2 * 2) + 1).astype(str)
+
+# Adjust month numbering
+month_map = {11:1, 12:2, 1:3, 2:4, 3:5}
+temp_df_filtered.loc[:, 'adjusted_month'] = temp_df_filtered['month'].map(month_map)
+new_data_df_filtered.loc[:, 'adjusted_month'] = new_data_df_filtered['month'].map(month_map)
+
+combined_df = pd.concat(
+    [
+        temp_df_filtered[['year', 'adjusted_month', 'Temp (air)', 'lat_zone', 'year_group']], 
+        new_data_df_filtered[['year', 'adjusted_month', 'Temp (air), C', 'lat_zone', 'year_group']].rename(columns={'Temp (air), C': 'Temp (air)'}), 
+    ], 
+    ignore_index=True
+)
+
+
+plt.figure(figsize=(18, 12))
+sns.set_style("whitegrid", {'grid.linestyle': ':', 'axes.edgecolor': '0.4'})
+
+g = sns.FacetGrid(
+    combined_df,
+    col='year_group',
+    hue='lat_zone',
+    col_wrap=4,
+    height=4,
+    aspect=1.3,
+    palette='viridis',
+    sharey=True
+)
+
+g.map(sns.lineplot, 'adjusted_month', 'Temp (air)',
+      estimator='mean',
+      errorbar=None,
+      linewidth=2.5,
+      sort=True)
+
+month_abbr = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar']
+
+for ax in g.axes.flat:
+    ax.set_xticks(range(1, 6))  # Set x-ticks for each month
+    ax.set_xticklabels(month_abbr, rotation=45)  # Rotated for better fit
+    ax.set_xlim(0.5, 5.5)  # Adjust x-axis limits to match 5 months
+    ax.set_xlabel('Month')  # Add x-axis label to all subplots
+    ax.set_ylabel('Temperature (°C)')  # Add y-axis label to all subplots
+
+g.set_axis_labels('Month', 'Temperature (°C)')
+g.set_titles("Year: {col_name}", fontsize=11)
+
+g.add_legend(title='Latitude Zone', bbox_to_anchor=(1.05, 0.5), frameon=True)
+g.fig.suptitle('Monthly Temperature Patterns by Latitude Zone and Year', fontsize=16, y=1.02)
+
+plt.tight_layout()
+plt.show()
