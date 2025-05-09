@@ -10,6 +10,7 @@ new_data = 'Divine_et_al_data_publication_Antarctic_logbooks_v2_Nov2023_final (1
 new_data_df = pd.read_excel(new_data)
 
 temp_df = df[df['Temp (air)'].notna()].copy()
+new_data_df_filtered = new_data_df.dropna(subset=['Temp (air), C'])
 
 lat_bins = [-70, -60, -50, -40]
 lat_labels = ['60-70°S', '50-60°S', '40-50°S']
